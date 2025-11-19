@@ -1077,10 +1077,10 @@
                 const grantResponse = await fetch('/api/grant-access', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'csrf-token': csrfToken
                     },
-                    credentials: 'include',
-                    body: JSON.stringify({ _csrf: csrfToken })
+                    credentials: 'include'
                 });
 
                 if (!grantResponse.ok) {

@@ -74,7 +74,13 @@ app.use(session({
     }
 }));
 
-const csrfProtection = csrf({ cookie: false });
+const csrfProtection = csrf({ 
+    cookie: false,
+    value: (req) => {
+        // Aceitar token do body, query ou headers
+        return req.body._csrf || req.query._csrf || req.headers['csrf-token'] || req.headers['x-csrf-token'];
+    }
+});
 
 app.use(express.static(path.join(__dirname, '../public')));
 
