@@ -2,9 +2,9 @@
   "name": "emoji-resizer-web",
   "version": "1.0.0",
   "description": "Web app para redimensionar emojis para Discord",
-  "main": "server.js",
+  "main": "src/server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node src/server.js"
   },
   "keywords": [
     "emoji",
@@ -13,6 +13,9 @@
   ],
   "author": "Sheriff Rex Bot",
   "license": "MIT",
+  "engines": {
+    "node": ">=18.x"
+  },
   "dependencies": {
     "cookie-parser": "^1.4.7",
     "csurf": "^1.11.0",

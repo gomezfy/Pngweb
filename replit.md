@@ -75,7 +75,27 @@ Para substituir o anúncio de demonstração por anúncios reais do Google:
 - `GET /api/access-status` - Verifica se o usuário tem acesso e quanto tempo resta
 - `POST /api/grant-access` - Concede 30 minutos de acesso após assistir anúncio
 
+## Deploy para Produção (VertraCloud)
+O projeto está pronto para deploy na VertraCloud! Veja o arquivo `README-DEPLOY.md` para instruções completas.
+
+### Arquivos de Deploy Criados
+- ✅ `README-DEPLOY.md` - Guia completo de deploy para VertraCloud
+- ✅ `.env.example` - Template de variáveis de ambiente
+- ✅ `package.json` atualizado com versão do Node.js
+
+### Passos Rápidos
+1. Acesse [VertraCloud](https://vertracloud.app)
+2. Crie um novo projeto Node.js
+3. Faça upload ou conecte via Git
+4. Configure variáveis de ambiente (SESSION_SECRET, PORT, NODE_ENV)
+5. Deploy automático!
+
 ## Mudanças Recentes
+- 19/11/2025: Preparado para deploy na VertraCloud 🚀
+  - README-DEPLOY.md criado com guia completo
+  - .env.example atualizado com PORT e configurações
+  - package.json atualizado com "engines" Node.js >= 18.x
+  - Documentação de deploy adicionada
 - 19/11/2025: Sistema de Anúncios Recompensados implementado 🎬
   - Modal de anúncios com design galáxia
   - Anúncios de 30 segundos desbloqueiam 30 minutos de acesso
