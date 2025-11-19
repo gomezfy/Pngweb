@@ -16,14 +16,15 @@ app.use(helmet({
     contentSecurityPolicy: {
         directives: {
             defaultSrc: ["'self'"],
-            scriptSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com"],
-            styleSrc: ["'self'", "'unsafe-inline'"],
+            scriptSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com", "https://pagead2.googlesyndication.com", "https://googleads.g.doubleclick.net", "https://www.googletagservices.com"],
+            styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
             imgSrc: ["'self'", "data:", "https:", "blob:"],
-            connectSrc: ["'self'", "https://discord.com"],
-            fontSrc: ["'self'"],
+            connectSrc: ["'self'", "https://discord.com", "https://pagead2.googlesyndication.com"],
+            fontSrc: ["'self'", "https://fonts.gstatic.com"],
             objectSrc: ["'none'"],
             mediaSrc: ["'self'"],
-            frameSrc: ["'none'"],
+            frameSrc: ["'self'", "https://googleads.g.doubleclick.net", "https://tpc.googlesyndication.com"],
+            childSrc: ["'self'", "https://googleads.g.doubleclick.net"],
         },
     },
     hsts: {
@@ -192,6 +193,39 @@ app.get('/api/user', (req, res) => {
     } else {
         res.status(401).json({ error: 'Not authenticated' });
     }
+});
+
+app.get('/api/access-status', (req, res) => {
+    if (!req.session.user) {
+        return res.status(401).json({ error: 'Not authenticated' });
+    }
+
+    const now = Date.now();
+    const accessExpiry = req.session.accessExpiry || 0;
+    const hasAccess = now < accessExpiry;
+    const remainingTime = hasAccess ? Math.floor((accessExpiry - now) / 1000) : 0;
+
+    res.json({
+        hasAccess,
+        remainingTime,
+        expiryTime: accessExpiry
+    });
+});
+
+app.post('/api/grant-access', csrfProtection, (req, res) => {
+    if (!req.session.user) {
+        return res.status(401).json({ error: 'Not authenticated' });
+    }
+
+    const accessDuration = 30 * 60 * 1000;
+    req.session.accessExpiry = Date.now() + accessDuration;
+
+    res.json({
+        success: true,
+        accessGranted: true,
+        expiryTime: req.session.accessExpiry,
+        duration: accessDuration
+    });
 });
 
 app.post('/logout', csrfProtection, (req, res) => {

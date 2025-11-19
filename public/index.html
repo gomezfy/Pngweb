@@ -473,6 +473,143 @@
             box-shadow: 0 2px 10px rgba(102, 126, 234, 0.4);
         }
 
+        .ad-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 14, 39, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .ad-modal.active {
+            display: flex;
+        }
+
+        .ad-content {
+            background: rgba(15, 20, 45, 0.9);
+            border: 2px solid rgba(147, 197, 253, 0.4);
+            border-radius: 30px;
+            padding: 50px;
+            max-width: 600px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 
+                0 20px 60px rgba(72, 52, 212, 0.6),
+                0 0 100px rgba(120, 119, 198, 0.3);
+            animation: scaleIn 0.5s ease-out;
+        }
+
+        .ad-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .ad-title {
+            color: #93c5fd;
+            font-size: 2.2em;
+            font-weight: 600;
+            margin-bottom: 15px;
+            text-shadow: 0 0 20px rgba(147, 197, 253, 0.5);
+        }
+
+        .ad-description {
+            color: rgba(203, 213, 255, 0.9);
+            font-size: 1.1em;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .ad-placeholder {
+            background: rgba(26, 26, 62, 0.6);
+            border: 2px dashed rgba(147, 197, 253, 0.4);
+            border-radius: 20px;
+            padding: 60px 40px;
+            margin: 30px 0;
+            min-height: 250px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .ad-timer {
+            color: #93c5fd;
+            font-size: 3em;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 0 0 30px rgba(147, 197, 253, 0.8);
+        }
+
+        .ad-watch-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 18px 45px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 8px 30px rgba(102, 126, 234, 0.5);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .ad-watch-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 40px rgba(102, 126, 234, 0.7);
+        }
+
+        .ad-watch-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .access-timer-container {
+            background: rgba(26, 26, 62, 0.5);
+            border: 1px solid rgba(147, 197, 253, 0.3);
+            border-radius: 15px;
+            padding: 15px 25px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            box-shadow: 0 4px 20px rgba(72, 52, 212, 0.2);
+        }
+
+        .access-timer-container.hidden {
+            display: none;
+        }
+
+        .access-timer {
+            color: #93c5fd;
+            font-size: 1.2em;
+            font-weight: 600;
+            text-shadow: 0 0 10px rgba(147, 197, 253, 0.5);
+        }
+
+        .locked-overlay {
+            position: relative;
+            pointer-events: none;
+            opacity: 0.4;
+            filter: blur(3px);
+        }
+
+        .locked-overlay.unlocked {
+            pointer-events: all;
+            opacity: 1;
+            filter: none;
+        }
+
         @media (max-width: 768px) {
             .container {
                 padding: 30px 20px;
@@ -490,6 +627,14 @@
             .preview-grid {
                 grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
                 gap: 15px;
+            }
+
+            .ad-content {
+                padding: 30px 20px;
+            }
+
+            .ad-title {
+                font-size: 1.8em;
             }
         }
     </style>
@@ -511,7 +656,15 @@
             <img src="/logo.png" alt="Logo" width="80" height="80" style="border-radius: 16px;">
         </h1>
 
-        <div class="size-selector">
+        <div class="access-timer-container hidden" id="accessTimerContainer">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                <path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <span class="access-timer" id="accessTimer">--:--</span>
+        </div>
+
+        <div class="size-selector" id="contentArea">
             <h3>
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle; margin-right: 8px;">
                     <path d="M3 7h18M3 12h18M3 17h18" stroke="white" stroke-width="2" stroke-linecap="round"/>
@@ -721,7 +874,14 @@
 
         async function loadUserInfo() {
             try {
-                const response = await fetch('/api/user');
+                const response = await fetch('/api/user', {
+                    credentials: 'include'
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to load user');
+                }
+                
                 const user = await response.json();
                 
                 const userNameEl = document.getElementById('userName');
@@ -742,7 +902,9 @@
 
         async function loadCsrfToken() {
             try {
-                const response = await fetch('/api/csrf-token');
+                const response = await fetch('/api/csrf-token', {
+                    credentials: 'include'
+                });
                 const data = await response.json();
                 document.getElementById('csrfTokenLogout').value = data.csrfToken;
             } catch (error) {
@@ -752,6 +914,200 @@
 
         loadUserInfo();
         loadCsrfToken();
+    </script>
+
+    <!-- Modal de Anúncio -->
+    <div class="ad-modal" id="adModal">
+        <div class="ad-content">
+            <div class="ad-icon">🎬</div>
+            <h2 class="ad-title">Assista um Anúncio</h2>
+            <p class="ad-description">
+                Para desbloquear acesso completo por <strong>30 minutos</strong>, assista a um anúncio de 30 segundos
+            </p>
+
+            <div class="ad-placeholder" id="adPlaceholder">
+                <div class="ad-timer" id="adCountdown">30</div>
+                <p style="color: rgba(203, 213, 255, 0.8);">Anúncio carregando...</p>
+            </div>
+
+            <button class="ad-watch-btn" id="watchAdBtn">Assistir Anúncio</button>
+            
+            <p style="color: rgba(203, 213, 255, 0.6); margin-top: 20px; font-size: 0.9em;">
+                💡 Configure seu Google AdSense ID para monetização real
+            </p>
+        </div>
+    </div>
+
+    <!-- Sistema de Controle de Acesso e Anúncios -->
+    <script>
+        let accessInterval = null;
+        let adCountdownInterval = null;
+        let csrfToken = '';
+
+        const adModal = document.getElementById('adModal');
+        const watchAdBtn = document.getElementById('watchAdBtn');
+        const adCountdown = document.getElementById('adCountdown');
+        const accessTimerContainer = document.getElementById('accessTimerContainer');
+        const accessTimer = document.getElementById('accessTimer');
+        const contentArea = document.getElementById('contentArea');
+
+        async function checkAccessStatus() {
+            try {
+                const response = await fetch('/api/access-status', {
+                    credentials: 'include'
+                });
+                
+                if (response.status === 401) {
+                    lockContent();
+                    showAdModal();
+                    return;
+                }
+
+                const data = await response.json();
+
+                if (data.hasAccess) {
+                    unlockContent();
+                    startAccessTimer(data.remainingTime);
+                } else {
+                    lockContent();
+                    showAdModal();
+                }
+            } catch (error) {
+                console.error('Erro ao verificar acesso:', error);
+                lockContent();
+                showAdModal();
+            }
+        }
+
+        function lockContent() {
+            const lockableElements = [
+                contentArea,
+                document.getElementById('progressContainer'),
+                document.getElementById('uploadArea'),
+                document.getElementById('previewGrid'),
+                document.getElementById('downloadSection')
+            ];
+
+            lockableElements.forEach(el => {
+                if (el) el.classList.add('locked-overlay');
+            });
+        }
+
+        function unlockContent() {
+            const lockableElements = [
+                contentArea,
+                document.getElementById('progressContainer'),
+                document.getElementById('uploadArea'),
+                document.getElementById('previewGrid'),
+                document.getElementById('downloadSection')
+            ];
+
+            lockableElements.forEach(el => {
+                if (el) {
+                    el.classList.remove('locked-overlay');
+                    el.classList.add('unlocked');
+                }
+            });
+
+            hideAdModal();
+        }
+
+        function showAdModal() {
+            adModal.classList.add('active');
+        }
+
+        function hideAdModal() {
+            adModal.classList.remove('active');
+        }
+
+        function startAccessTimer(remainingSeconds) {
+            accessTimerContainer.classList.remove('hidden');
+            
+            if (accessInterval) {
+                clearInterval(accessInterval);
+            }
+
+            function updateTimer() {
+                if (remainingSeconds <= 0) {
+                    clearInterval(accessInterval);
+                    accessTimerContainer.classList.add('hidden');
+                    lockContent();
+                    showAdModal();
+                    return;
+                }
+
+                const minutes = Math.floor(remainingSeconds / 60);
+                const seconds = remainingSeconds % 60;
+                accessTimer.textContent = `${minutes}:${seconds.toString().padStart(2, '0')} restantes`;
+                remainingSeconds--;
+            }
+
+            updateTimer();
+            accessInterval = setInterval(updateTimer, 1000);
+        }
+
+        watchAdBtn.addEventListener('click', async () => {
+            watchAdBtn.disabled = true;
+            watchAdBtn.textContent = 'Carregando...';
+
+            let countdown = 30;
+            adCountdown.textContent = countdown;
+
+            adCountdownInterval = setInterval(() => {
+                countdown--;
+                adCountdown.textContent = countdown;
+
+                if (countdown <= 0) {
+                    clearInterval(adCountdownInterval);
+                    grantAccess();
+                }
+            }, 1000);
+        });
+
+        async function grantAccess() {
+            try {
+                if (!csrfToken) {
+                    const tokenResponse = await fetch('/api/csrf-token', {
+                        credentials: 'include'
+                    });
+                    const tokenData = await tokenResponse.json();
+                    csrfToken = tokenData.csrfToken;
+                }
+
+                const grantResponse = await fetch('/api/grant-access', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({ _csrf: csrfToken })
+                });
+
+                if (!grantResponse.ok) {
+                    throw new Error('Falha ao conceder acesso');
+                }
+
+                const grantData = await grantResponse.json();
+
+                if (grantData.success) {
+                    unlockContent();
+                    startAccessTimer(30 * 60);
+                    watchAdBtn.disabled = false;
+                    watchAdBtn.textContent = 'Assistir Anúncio';
+                    adCountdown.textContent = '30';
+                }
+            } catch (error) {
+                console.error('Erro ao conceder acesso:', error);
+                watchAdBtn.disabled = false;
+                watchAdBtn.textContent = 'Tentar Novamente';
+                alert('Erro ao conceder acesso. Tente novamente.');
+            }
+        }
+
+        lockContent();
+        
+        checkAccessStatus();
+        setInterval(checkAccessStatus, 60000);
     </script>
 </body>
 </html>

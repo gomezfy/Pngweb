@@ -24,12 +24,15 @@ Aplicação web para redimensionar emojis para o Discord Developer Portal. O sis
 
 ## Funcionalidades
 - ✅ Upload de imagens via drag & drop ou seleção
-- ✅ Redimensionamento automático para 128x128 pixels
+- ✅ Redimensionamento automático para múltiplos tamanhos (32x32, 64x64, 128x128, 256x256, 512x512)
 - ✅ Preview em tempo real das imagens processadas
 - ✅ Barra de progresso durante o processamento
 - ✅ Nomes pré-definidos para os emojis (SWORDS, PIN, CARDS, etc.)
 - ✅ Download em arquivo ZIP
-- ✅ Interface responsiva e moderna
+- ✅ Interface responsiva e moderna com tema Galáxia 🌌
+- ✅ **Sistema de Anúncios Recompensados**: Assista anúncios de 30 segundos para desbloquear 30 minutos de acesso
+- ✅ Timer visual mostrando tempo restante de acesso
+- ✅ Sistema de autenticação (Discord OAuth e Username)
 
 ## Configuração
 - **Porta**: 5000 (configurada para Replit)
@@ -48,8 +51,45 @@ Aplicação web para redimensionar emojis para o Discord Developer Portal. O sis
 ## Variáveis de Ambiente
 - `SESSION_SECRET`: Chave secreta para sessões (recomendado: mínimo 32 caracteres)
 - `NODE_ENV`: Ambiente de execução (development/production)
+- `GOOGLE_ADSENSE_ID` (Opcional): ID do Google AdSense para monetização com anúncios reais
+
+## Sistema de Anúncios Recompensados
+O aplicativo implementa um sistema inovador de monetização:
+
+### Como Funciona
+1. **Acesso Inicial**: Usuário faz login e encontra o conteúdo bloqueado
+2. **Modal de Anúncio**: Sistema solicita que assista a um anúncio de 30 segundos
+3. **Recompensa**: Após assistir, o usuário ganha 30 minutos de acesso completo
+4. **Timer Visual**: Contador regressivo mostra tempo restante
+5. **Renovação**: Quando o tempo expira, sistema solicita novo anúncio
+
+### Configuração Google AdSense (Opcional)
+Para substituir o anúncio de demonstração por anúncios reais do Google:
+
+1. Crie uma conta no [Google AdSense](https://www.google.com/adsense/)
+2. Configure Rewarded Ad Units no painel do AdSense
+3. Adicione seu Publisher ID ao código HTML (linha com `data-ad-client`)
+4. Os anúncios reais começarão a aparecer automaticamente
+
+### Endpoints API
+- `GET /api/access-status` - Verifica se o usuário tem acesso e quanto tempo resta
+- `POST /api/grant-access` - Concede 30 minutos de acesso após assistir anúncio
 
 ## Mudanças Recentes
+- 19/11/2025: Sistema de Anúncios Recompensados implementado 🎬
+  - Modal de anúncios com design galáxia
+  - Anúncios de 30 segundos desbloqueiam 30 minutos de acesso
+  - Timer visual mostrando tempo restante
+  - API endpoints para controle de acesso (`/api/access-status`, `/api/grant-access`)
+  - Bloqueio de conteúdo até assistir anúncio
+  - Preparado para integração com Google AdSense Rewarded Ads
+  - CSP atualizado para permitir Google AdSense
+- 19/11/2025: Design Galáxia 🌌 e Fonte Gota 💧
+  - Fundo escuro espacial com efeito de estrelas animadas
+  - Fonte Fredoka (estilo arredondado tipo gota)
+  - Cores azuis e roxas vibrantes (#93c5fd, #667eea)
+  - Efeitos de brilho e glow nos elementos
+  - Logo standalone sem texto
 - 19/11/2025: Estrutura do projeto reorganizada em pastas
   - Criada pasta `src/` para código do servidor
   - Criada pasta `public/` para arquivos estáticos (HTML, CSS, imagens)
