@@ -75,7 +75,7 @@ app.use(session({
 
 const csrfProtection = csrf({ cookie: false });
 
-app.use(express.static(__dirname));
+app.use(express.static(path.join(__dirname, '../public')));
 
 async function getDiscordAccessToken() {
     const hostname = process.env.REPLIT_CONNECTORS_HOSTNAME;
@@ -112,14 +112,14 @@ function isAuthenticated(req, res, next) {
 }
 
 app.get('/', isAuthenticated, (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
+    res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
 app.get('/login', csrfProtection, (req, res) => {
     if (req.session.user) {
         return res.redirect('/');
     }
-    res.sendFile(path.join(__dirname, 'login.html'));
+    res.sendFile(path.join(__dirname, '../public/login.html'));
 });
 
 app.get('/api/csrf-token', csrfProtection, (req, res) => {

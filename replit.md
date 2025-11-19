@@ -11,12 +11,15 @@ Aplicação web para redimensionar emojis para o Discord Developer Portal. O sis
 ## Arquitetura do Projeto
 ```
 /
-├── server.js          # Servidor Express na porta 5000
-├── index.html         # Interface web com drag & drop
-├── login.html         # Página de login com Discord/Username
-├── logo.png           # Logo minimalista do PixelCraft
+├── src/
+│   └── server.js      # Servidor Express na porta 5000
+├── public/
+│   ├── index.html     # Interface web com drag & drop
+│   ├── login.html     # Página de login com Discord/Username
+│   └── logo.png       # Logo minimalista do PixelCraft
 ├── package.json       # Dependências do projeto
-└── README.md         # Documentação do usuário
+├── README.md          # Documentação do usuário
+└── replit.md          # Documentação do projeto
 ```
 
 ## Funcionalidades
@@ -47,10 +50,14 @@ Aplicação web para redimensionar emojis para o Discord Developer Portal. O sis
 - `NODE_ENV`: Ambiente de execução (development/production)
 
 ## Mudanças Recentes
+- 19/11/2025: Estrutura do projeto reorganizada em pastas
+  - Criada pasta `src/` para código do servidor
+  - Criada pasta `public/` para arquivos estáticos (HTML, CSS, imagens)
+  - Workflow atualizado para executar `node src/server.js`
+  - Caminhos no server.js ajustados para a nova estrutura
+  - Servidor rodando em http://0.0.0.0:5000
 - 19/11/2025: Estrutura do projeto reorganizada
   - Todos os arquivos movidos da pasta emoji-resizer-webzipzipzip/ para a raiz do projeto
-  - Workflow reconfigurado e funcionando corretamente
-  - Servidor rodando em http://0.0.0.0:5000
 - 19/11/2025: Barra de progresso implementada
   - Feedback visual durante processamento de múltiplas imagens
   - Mostra porcentagem e contador de imagens processadas
