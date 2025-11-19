@@ -1,5 +1,6 @@
 const express = require('express');
 const session = require('express-session');
+const FileStore = require('session-file-store')(session);
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const { body, validationResult } = require('express-validator');
@@ -61,7 +62,17 @@ app.use(express.json({ limit: '10mb' }));
 
 const sessionSecret = process.env.SESSION_SECRET || require('crypto').randomBytes(32).toString('hex');
 
+// Configurar session store baseado no ambiente
+const sessionStore = process.env.NODE_ENV === 'production' 
+    ? new FileStore({
+        path: './sessions',
+        ttl: 7 * 24 * 60 * 60,
+        retries: 0
+    })
+    : undefined; // MemoryStore para desenvolvimento
+
 app.use(session({
+    store: sessionStore,
     secret: sessionSecret,
     resave: false,
     saveUninitialized: false,
