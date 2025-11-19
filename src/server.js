@@ -150,7 +150,7 @@ app.get('/', isAuthenticated, (req, res) => {
     res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
-app.get('/login', csrfProtection, (req, res) => {
+app.get('/login', (req, res) => {
     if (req.session.user) {
         return res.redirect('/');
     }
