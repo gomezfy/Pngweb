@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PixelCraft - Redimensionador de Imagens</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: drift 20s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes drift {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(30px) saturate(180%);
+            -webkit-backdrop-filter: blur(30px) saturate(180%);
+            border-radius: 30px;
+            padding: 50px;
+            box-shadow: 
+                0 8px 32px 0 rgba(31, 38, 135, 0.37),
+                0 0 1px rgba(255, 255, 255, 0.5) inset;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            animation: fadeInUp 0.8s ease-out;
+            position: relative;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 10px;
+            font-size: 3em;
+            font-weight: 700;
+            letter-spacing: -1px;
+            text-shadow: 0 2px 20px rgba(0,0,0,0.2);
+        }
+
+        .subtitle {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 40px;
+            font-size: 1.1em;
+            font-weight: 500;
+        }
+
+        .info-box {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 30px;
+            animation: scaleIn 0.6s ease-out 0.2s both;
+        }
+
+        .info-box h3 {
+            margin-bottom: 15px;
+            color: white;
+            font-size: 1.3em;
+            font-weight: 600;
+        }
+
+        .info-box ul {
+            margin-left: 20px;
+            color: rgba(255, 255, 255, 0.95);
+            line-height: 1.8;
+        }
+
+        .info-box ul li {
+            margin-bottom: 5px;
+        }
+
+        .info-box p {
+            margin-top: 15px;
+            font-style: italic;
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        .upload-area {
+            border: 3px dashed rgba(255, 255, 255, 0.5);
+            border-radius: 25px;
+            padding: 50px;
+            text-align: center;
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: scaleIn 0.6s ease-out 0.4s both;
+        }
+
+        .upload-area:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.8);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .upload-area.dragover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: white;
+            transform: scale(1.02);
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .upload-icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .upload-area h3 {
+            color: white;
+            font-size: 1.4em;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .upload-area p {
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 1em;
+        }
+
+        .btn {
+            background: rgba(255, 255, 255, 0.9);
+            color: #667eea;
+            border: none;
+            padding: 16px 40px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 17px;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .btn:hover {
+            background: white;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+
+        .btn:active {
+            transform: translateY(-1px);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .preview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .emoji-card {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: scaleIn 0.4s ease-out both;
+        }
+
+        .emoji-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .emoji-preview {
+            width: 128px;
+            height: 128px;
+            margin: 0 auto 15px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            overflow: hidden;
+        }
+
+        .emoji-preview img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .emoji-name {
+            font-weight: 600;
+            color: white;
+            margin-bottom: 5px;
+            font-size: 1.1em;
+        }
+
+        .emoji-size {
+            font-size: 0.9em;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .user-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: white;
+            font-size: 18px;
+        }
+
+        .user-avatar img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .user-name {
+            color: white;
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 10px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .download-all {
+            text-align: center;
+            margin-top: 40px;
+            animation: scaleIn 0.6s ease-out both;
+        }
+
+        .size-selector {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 30px;
+            animation: scaleIn 0.6s ease-out 0.3s both;
+        }
+
+        .size-selector h3 {
+            margin-bottom: 15px;
+            color: white;
+            font-size: 1.2em;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .size-options {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .size-option {
+            background: rgba(255, 255, 255, 0.3);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            padding: 12px 24px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .size-option:hover {
+            background: rgba(255, 255, 255, 0.4);
+            transform: translateY(-2px);
+            border-color: rgba(255, 255, 255, 0.6);
+        }
+
+        .size-option.active {
+            background: rgba(255, 255, 255, 0.9);
+            color: #667eea;
+            border-color: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .progress-container {
+            display: none;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 30px;
+            animation: scaleIn 0.4s ease-out both;
+        }
+
+        .progress-container.active {
+            display: block;
+        }
+
+        .progress-text {
+            color: white;
+            font-size: 1.1em;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .progress-bar-wrapper {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+            height: 30px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-bar {
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            height: 100%;
+            border-radius: 15px;
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+            box-shadow: 0 2px 10px rgba(102, 126, 234, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 30px 20px;
+                border-radius: 20px;
+            }
+
+            h1 {
+                font-size: 2.2em;
+            }
+
+            .upload-area {
+                padding: 30px 20px;
+            }
+
+            .preview-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="user-header">
+            <div class="user-info">
+                <div class="user-avatar" id="userAvatar"></div>
+                <span class="user-name" id="userName">Carregando...</span>
+            </div>
+            <form action="/logout" method="POST" style="margin: 0;" id="logoutForm">
+                <input type="hidden" name="_csrf" id="csrfTokenLogout">
+                <button type="submit" class="logout-btn">Sair</button>
+            </form>
+        </div>
+
+        <h1>
+            <img src="/logo.png" alt="PixelCraft Logo" width="60" height="60" style="vertical-align: middle; margin-right: 10px; border-radius: 12px;">
+            PixelCraft
+        </h1>
+
+        <div class="size-selector">
+            <h3>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle; margin-right: 8px;">
+                    <path d="M3 7h18M3 12h18M3 17h18" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M7 3v18M17 3v18" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                Escolha o Tamanho
+            </h3>
+            <div class="size-options">
+                <button class="size-option" data-size="32">32x32</button>
+                <button class="size-option" data-size="64">64x64</button>
+                <button class="size-option active" data-size="128">128x128</button>
+                <button class="size-option" data-size="256">256x256</button>
+                <button class="size-option" data-size="512">512x512</button>
+            </div>
+        </div>
+
+        <div class="progress-container" id="progressContainer">
+            <div class="progress-text" id="progressText">Processando imagens...</div>
+            <div class="progress-bar-wrapper">
+                <div class="progress-bar" id="progressBar" style="width: 0%;">0%</div>
+            </div>
+        </div>
+
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-icon">
+                <svg width="80" height="80" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 15V3m0 0L8 7m4-4l4 4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M2 17l.621 2.485A2 2 0 004.561 21h14.878a2 2 0 001.94-1.515L22 17" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+            <h3>Arraste imagens aqui ou clique para selecionar</h3>
+            <p>Aceita: PNG, JPG</p>
+            <input type="file" id="fileInput" accept="image/*" multiple>
+        </div>
+
+        <div class="preview-grid" id="previewGrid"></div>
+
+        <div class="download-all" id="downloadSection" style="display: none;">
+            <button class="btn" id="downloadAllBtn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle; margin-right: 8px;">
+                    <path d="M12 3v12m0 0l-4-4m4 4l4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M3 17v2a2 2 0 002 2h14a2 2 0 002-2v-2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                Baixar Todas as Imagens
+            </button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const previewGrid = document.getElementById('previewGrid');
+        const downloadSection = document.getElementById('downloadSection');
+        const downloadAllBtn = document.getElementById('downloadAllBtn');
+        const sizeOptions = document.querySelectorAll('.size-option');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
+
+        let processedImages = [];
+        let selectedSize = 128;
+        let totalFiles = 0;
+        let processedCount = 0;
+
+        sizeOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                sizeOptions.forEach(opt => opt.classList.remove('active'));
+                option.classList.add('active');
+                selectedSize = parseInt(option.getAttribute('data-size'));
+            });
+        });
+
+        uploadArea.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', handleFiles);
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            handleFiles({ target: { files: e.dataTransfer.files } });
+        });
+
+        function handleFiles(e) {
+            const files = Array.from(e.target.files);
+            processedImages = [];
+            previewGrid.innerHTML = '';
+            downloadSection.style.display = 'none';
+            
+            const imageFiles = files.filter(file => file.type.startsWith('image/'));
+            totalFiles = imageFiles.length;
+            processedCount = 0;
+
+            if (totalFiles > 0) {
+                progressContainer.classList.add('active');
+                updateProgress();
+            }
+
+            imageFiles.forEach((file, index) => {
+                resizeImage(file, index);
+            });
+        }
+
+        function updateProgress() {
+            const percentage = totalFiles > 0 ? Math.round((processedCount / totalFiles) * 100) : 0;
+            progressBar.style.width = percentage + '%';
+            progressBar.textContent = percentage + '%';
+            progressText.textContent = `Processando imagens... ${processedCount}/${totalFiles}`;
+
+            if (processedCount >= totalFiles) {
+                setTimeout(() => {
+                    progressContainer.classList.remove('active');
+                    progressText.textContent = 'Processamento concluído!';
+                }, 500);
+            }
+        }
+
+        function resizeImage(file, index) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = selectedSize;
+                    canvas.height = selectedSize;
+                    const ctx = canvas.getContext('2d', { alpha: true });
+
+                    ctx.imageSmoothingEnabled = true;
+                    ctx.imageSmoothingQuality = 'high';
+
+                    ctx.clearRect(0, 0, selectedSize, selectedSize);
+
+                    const scale = Math.max(selectedSize / img.width, selectedSize / img.height);
+                    const scaledWidth = img.width * scale;
+                    const scaledHeight = img.height * scale;
+                    const x = (selectedSize - scaledWidth) / 2;
+                    const y = (selectedSize - scaledHeight) / 2;
+
+                    ctx.drawImage(img, x, y, scaledWidth, scaledHeight);
+
+                    canvas.toBlob((blob) => {
+                        const originalName = file.name.replace(/\.[^/.]+$/, '');
+                        const fileName = originalName || `image_${index + 1}`;
+                        const size = (blob.size / 1024).toFixed(1);
+
+                        processedImages.push({
+                            name: fileName,
+                            blob: blob,
+                            size: size,
+                            dimensions: `${selectedSize}x${selectedSize}`
+                        });
+
+                        displayPreview(canvas.toDataURL(), fileName, size, selectedSize);
+
+                        processedCount++;
+                        updateProgress();
+
+                        if (processedImages.length > 0) {
+                            downloadSection.style.display = 'block';
+                        }
+                    }, 'image/png', 1.0);
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function displayPreview(dataUrl, name, size, dimensions) {
+            const card = document.createElement('div');
+            card.className = 'emoji-card';
+            card.style.animationDelay = `${processedImages.length * 0.1}s`;
+            
+            const previewSize = Math.min(dimensions, 128);
+            
+            card.innerHTML = `
+                <div class="emoji-preview" style="width: ${previewSize}px; height: ${previewSize}px;">
+                    <img src="${dataUrl}" alt="${name}">
+                </div>
+                <div class="emoji-name">${name}.png</div>
+                <div class="emoji-size">${dimensions}px • ${size} KB</div>
+            `;
+            previewGrid.appendChild(card);
+        }
+
+        downloadAllBtn.addEventListener('click', async () => {
+            const zip = new JSZip();
+            const folder = zip.folder('emojis_resized');
+
+            processedImages.forEach(img => {
+                folder.file(`${img.name}.png`, img.blob);
+            });
+
+            const content = await zip.generateAsync({ type: 'blob' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(content);
+            link.download = 'emojis_resized.zip';
+            link.click();
+        });
+
+        async function loadUserInfo() {
+            try {
+                const response = await fetch('/api/user');
+                const user = await response.json();
+                
+                const userNameEl = document.getElementById('userName');
+                const userAvatarEl = document.getElementById('userAvatar');
+                
+                if (user.avatar) {
+                    userAvatarEl.innerHTML = `<img src="${user.avatar}" alt="${user.username}">`;
+                } else {
+                    userAvatarEl.textContent = user.username.charAt(0).toUpperCase();
+                }
+                
+                userNameEl.textContent = user.username;
+            } catch (error) {
+                console.error('Error loading user info:', error);
+                document.getElementById('userName').textContent = 'Usuário';
+            }
+        }
+
+        async function loadCsrfToken() {
+            try {
+                const response = await fetch('/api/csrf-token');
+                const data = await response.json();
+                document.getElementById('csrfTokenLogout').value = data.csrfToken;
+            } catch (error) {
+                console.error('Error loading CSRF token:', error);
+            }
+        }
+
+        loadUserInfo();
+        loadCsrfToken();
+    </script>
+</body>
+</html>
