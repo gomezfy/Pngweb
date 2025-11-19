@@ -78,6 +78,22 @@ const csrfProtection = csrf({ cookie: false });
 
 app.use(express.static(path.join(__dirname, '../public')));
 
+// Middleware para detectar bots do Google (Googlebot, AdsBot, etc.)
+function isGoogleBot(req) {
+    const userAgent = req.headers['user-agent'] || '';
+    const googleBotPatterns = [
+        /googlebot/i,
+        /adsbot-google/i,
+        /mediapartners-google/i,
+        /apis-google/i,
+        /google-adwords/i,
+        /google page speed/i,
+        /feedfetcher-google/i
+    ];
+    
+    return googleBotPatterns.some(pattern => pattern.test(userAgent));
+}
+
 async function getDiscordAccessToken() {
     const hostname = process.env.REPLIT_CONNECTORS_HOSTNAME;
     const xReplitToken = process.env.REPL_IDENTITY 
@@ -106,6 +122,18 @@ async function getDiscordAccessToken() {
 }
 
 function isAuthenticated(req, res, next) {
+    // Permitir acesso total para bots do Google
+    if (isGoogleBot(req)) {
+        // Criar uma sessão temporária para o bot com acesso ilimitado
+        req.session.user = {
+            id: 'googlebot',
+            username: 'GoogleBot',
+            provider: 'bot'
+        };
+        req.session.accessExpiry = Date.now() + (365 * 24 * 60 * 60 * 1000); // 1 ano
+        return next();
+    }
+    
     if (req.session.user) {
         return next();
     }
