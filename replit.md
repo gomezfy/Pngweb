@@ -47,6 +47,10 @@ Aplicação web para redimensionar emojis para o Discord Developer Portal. O sis
 - `NODE_ENV`: Ambiente de execução (development/production)
 
 ## Mudanças Recentes
+- 19/11/2025: Estrutura do projeto reorganizada
+  - Todos os arquivos movidos da pasta emoji-resizer-webzipzipzip/ para a raiz do projeto
+  - Workflow reconfigurado e funcionando corretamente
+  - Servidor rodando em http://0.0.0.0:5000
 - 19/11/2025: Barra de progresso implementada
   - Feedback visual durante processamento de múltiplas imagens
   - Mostra porcentagem e contador de imagens processadas
